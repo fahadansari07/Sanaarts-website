@@ -10,7 +10,9 @@ export default defineConfig({
   site,
   trailingSlash: 'never',
   // 4321 = dev-projectsiq, 4322 = FusionmindIQ; Sanaarts gets its own port so they never collide
-  server: { port: 4375, strictPort: true },
+  server: { port: 4375 },
+  // Astro's server type has no strictPort; Vite's does — fail instead of silently switching ports
+  vite: { server: { strictPort: true } },
   build: { format: 'file' },
   integrations: [sitemap({ filter: (page) => !page.includes('/404') })],
   fonts: [

@@ -2,6 +2,3 @@ node_modules
 dist
 .astro
 .env
-
-# private working brief (Insights data), kept local only
-sanaa_artsss_website_brief_for_claude.md
