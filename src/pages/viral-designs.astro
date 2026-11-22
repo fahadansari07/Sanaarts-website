@@ -1,0 +1,60 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import RankedList from '../components/RankedList.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { postUrl, topReels } from '../data/designs';
+import { site, stats } from '../data/site';
+
+const reels = topReels.slice(0, 20);
+const crumbs = [{ name: 'Viral designs', path: '/viral-designs' }];
+const schema = [{
+  '@type': 'CollectionPage',
+  name: `The 20 most-viewed mehandi reels by ${site.artist}`,
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListOrder: 'https://schema.org/ItemListOrderDescending',
+    numberOfItems: reels.length,
+    itemListElement: reels.map((d, i) => ({ '@type': 'ListItem', position: i + 1, url: postUrl(d), name: d.label })),
+  },
+}];
+---
+<Base
+  title="Viral Mehandi Designs — Sana Hashmi’s 20 Most-Viewed Reels"
+  description={`The 20 most-viewed mehandi reels by Sana Hashmi, ranked by Instagram views. Her reels have passed ${stats.totalReelViews} views; the top three alone reached 5.5M.`}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <Breadcrumbs items={crumbs} />
+  <section class="section" aria-labelledby="viral-h">
+    <div class="wrap">
+      <div class="section-head split">
+        <div>
+          <span class="eyebrow">Viral designs</span>
+          <h1 id="viral-h">The 20 most-viewed <em>mehandi reels</em></h1>
+        </div>
+        <p class="lead">Ranked by Instagram views. The top three alone reached 5.5M views — about 63% of all reel views on the page. Tap any design to watch the original reel.</p>
+      </div>
+      <div class="viral-cols">
+        <RankedList items={reels.slice(0, 10)} />
+        <RankedList items={reels.slice(10, 20)} start={11} />
+      </div>
+      <p class="src">Source: {stats.source}.</p>
+    </div>
+  </section>
+
+  <CtaBand heading="Want a design that goes viral?" text="Send the reel you love on WhatsApp with your event date and location — Sana will take it from there." />
+</Base>
+
+<style>
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: none; align-items: end; }
+  .split .lead { margin: 0; }
+  .viral-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 48px; }
+  .viral-cols :global(.ranked:last-child) { border-top-color: var(--line); }
+  .src { margin: 28px 0 0; font-size: .82rem; color: var(--muted); }
+  @media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; gap: 12px; }
+    .viral-cols { grid-template-columns: 1fr; }
+    .viral-cols :global(.ranked + .ranked), .viral-cols :global(.ranked:last-child) { border-top: 0; }
+  }
+</style>

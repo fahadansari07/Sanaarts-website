@@ -1,0 +1,167 @@
+---
+import { categories } from '../data/designs';
+import { site, whatsappLink } from '../data/site';
+import WhatsAppIcon from './WhatsAppIcon.astro';
+
+const path = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
+const isCurrent = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+];
+const after = [
+  { href: '/viral-designs', label: 'Viral designs' },
+  { href: '/gallery', label: 'Gallery' },
+  { href: '/contact', label: 'Contact' },
+];
+---
+<header class="site-header" data-header>
+  <div class="wrap bar">
+    <a class="brand" href="/" aria-label={`${site.name} — home`}>
+      <span class="brand-name">{site.name}</span>
+      <span class="brand-sub">Mehandi by {site.artist}</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-toggle>
+      <span class="visually-hidden">Menu</span>
+      <span class="burger" aria-hidden="true"></span>
+    </button>
+
+    <nav id="site-nav" class="nav" aria-label="Main">
+      <ul class="nav-list">
+        {links.map((l) => (
+          <li><a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a></li>
+        ))}
+        <li class="has-menu">
+          <div class="dropdown" data-dropdown>
+            <button type="button" class="dd-btn" aria-expanded="false" aria-controls="designs-menu" data-current={isCurrent('/designs') ? 'true' : undefined}>Designs <span class="chev" aria-hidden="true"></span></button>
+            <div class="menu" id="designs-menu">
+              <ul>
+                {categories.map((c) => (
+                  <li><a href={`/designs/${c.slug}`} aria-current={path === `/designs/${c.slug}` ? 'page' : undefined}>{c.short}</a></li>
+                ))}
+              </ul>
+              <a class="menu-all" href="/designs">All design styles →</a>
+            </div>
+          </div>
+        </li>
+        {after.map((l) => (
+          <li><a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>{l.label}</a></li>
+        ))}
+      </ul>
+      <a class="btn btn--solid nav-cta" href={whatsappLink()} target="_blank" rel="noopener">
+        <WhatsAppIcon /> Book on WhatsApp
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const dropdown = document.querySelector<HTMLElement>('[data-dropdown]');
+  const ddBtn = dropdown?.querySelector<HTMLButtonElement>('.dd-btn');
+  const setDd = (open: boolean) => { dropdown?.classList.toggle('is-open', open); ddBtn?.setAttribute('aria-expanded', String(open)); };
+  ddBtn?.addEventListener('click', () => setDd(ddBtn.getAttribute('aria-expanded') !== 'true'));
+  dropdown?.addEventListener('focusout', (e) => { if (!dropdown.contains(e.relatedTarget as Node)) setDd(false); });
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    header?.classList.toggle('is-open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  document.addEventListener('click', (e) => {
+    if (dropdown && !dropdown.contains(e.target as Node)) setDd(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dropdown?.classList.contains('is-open')) { setDd(false); ddBtn?.focus(); }
+  });
+  const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+</script>
+
+<style>
+  /* Dark header: re-map tokens (like CtaBand/Footer) so links, dropdown, burger and button invert */
+  .site-header {
+    --ivory: var(--night); --ink: var(--sand); --muted: #c4bdab; --henna: var(--gold-light); --henna-dark: #f6ead0;
+    --line: rgb(228 210 160 / .2);
+    position: sticky; top: 0; z-index: 50;
+    background: var(--ivory);
+    border-bottom: 1px solid transparent;
+    transition: border-color .3s var(--ease);
+  }
+  .site-header.is-scrolled { border-bottom-color: var(--line); }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 76px; }
+  .brand { text-decoration: none; display: grid; line-height: 1; }
+  .brand-name { font-family: var(--font-serif); font-size: 1.85rem; font-weight: 600; color: var(--henna); letter-spacing: .01em; }
+  .brand-sub { font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
+
+  .nav { display: flex; align-items: center; gap: 28px; }
+  .nav-list { display: flex; align-items: center; gap: 30px; list-style: none; margin: 0; padding: 0; }
+  .nav-list a, .dd-btn {
+    text-decoration: none; font-size: .95rem; color: var(--ink); cursor: pointer;
+    padding: 6px 0; border-bottom: 1px solid transparent; transition: border-color .25s, color .25s;
+  }
+  .dd-btn { font-family: inherit; background: none; border: 0; border-bottom: 1px solid transparent; }
+  .nav-list a:hover, .dd-btn:hover, [aria-current='page'], .dd-btn[data-current] { color: var(--henna); border-bottom-color: currentColor; }
+  .nav-cta { min-height: 42px; padding: 10px 20px; font-size: .88rem; }
+
+  .dropdown { position: relative; }
+  .dd-btn { display: inline-flex; align-items: center; gap: 6px; }
+  .menu { display: none; }
+  .dropdown.is-open > .menu { display: block; }
+  .chev { width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .25s; }
+  .dropdown.is-open .chev { transform: rotate(225deg) translateY(-1px); }
+  .menu {
+    position: absolute; left: 50%; top: calc(100% + 18px); transform: translateX(-50%);
+    width: 440px; padding: 22px 24px 18px; background: var(--ivory);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: 0 24px 48px -24px rgb(43 33 28 / .25);
+  }
+  .menu ul { list-style: none; margin: 0 0 14px; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+  .menu li a { display: block; padding: 7px 0; border: 0; font-size: .95rem; }
+  .menu li a:hover { color: var(--henna); }
+  .menu-all { display: block; border-top: 1px solid var(--line); padding-top: 12px !important; font-size: .85rem !important; color: var(--henna) !important; border-bottom: 0 !important; }
+
+  .menu-toggle { display: none; }
+
+  @media (min-width: 961px) {
+    /* blur only on desktop: backdrop-filter would trap the fixed mobile menu inside the header */
+    .site-header { background: color-mix(in srgb, var(--ivory) 92%, transparent); backdrop-filter: blur(10px); }
+    /* hover/focus opens on desktop; the button toggles everywhere */
+    .dropdown:hover > .menu { display: block; }
+    .dropdown:hover .chev { transform: rotate(225deg) translateY(-1px); }
+    .dropdown::after { content: ''; position: absolute; left: -20px; right: -20px; top: 100%; height: 22px; }
+  }
+
+  @media (max-width: 960px) {
+    .menu-toggle {
+      display: grid; place-items: center; width: 46px; height: 46px; border: 1px solid var(--line);
+      border-radius: 50%; background: transparent; cursor: pointer;
+    }
+    .burger, .burger::before, .burger::after {
+      width: 18px; height: 1.5px; background: var(--ink); display: block; position: relative; transition: transform .3s var(--ease), background .3s;
+    }
+    .burger::before, .burger::after { content: ''; position: absolute; left: 0; }
+    .burger::before { top: -6px; }
+    .burger::after { top: 6px; }
+    .is-open .burger { background: transparent; }
+    .is-open .burger::before { transform: translateY(6px) rotate(45deg); }
+    .is-open .burger::after { transform: translateY(-6px) rotate(-45deg); }
+
+    .nav {
+      position: fixed; inset: 76px 0 0; background: var(--ivory); flex-direction: column; align-items: stretch;
+      padding: 16px 16px 32px; gap: 20px; overflow-y: auto;
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: opacity .3s var(--ease), transform .3s var(--ease), visibility .3s;
+    }
+    .is-open .nav { opacity: 1; visibility: visible; transform: none; }
+    .nav-list { flex-direction: column; align-items: stretch; gap: 0; }
+    .nav-list > li { border-bottom: 1px solid var(--line); }
+    .nav-list a, .dd-btn { display: flex; width: 100%; color: var(--ink); justify-content: space-between; padding: 16px 4px; font-family: var(--font-serif); font-size: 1.45rem; border: 0; }
+    .menu { position: static; transform: none; width: auto; border: 0; box-shadow: none; padding: 0 4px 16px; background: transparent; }
+    .menu li a { font-family: var(--font-sans); font-size: 1rem; padding: 8px 0; }
+    .nav-cta { min-height: 52px; font-size: 1rem; }
+  }
+</style>

@@ -1,0 +1,221 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import WhatsAppIcon from '../components/WhatsAppIcon.astro';
+import { categories } from '../data/designs';
+import { site, whatsappLink } from '../data/site';
+
+const crumbs = [{ name: 'Contact', path: '/contact' }];
+const schema = [{
+  '@type': 'ContactPage',
+  name: `Book ${site.artist}`,
+  mainEntity: {
+    '@id': new URL('/#sana-hashmi', Astro.site).href,
+  },
+}];
+const eventTypes = ['Bridal', 'Engagement / Nikah', 'Party / guest', 'Eid / festive', 'Other'];
+---
+<Base
+  title="Book a Mehandi Artist in Mumbai — Contact Sana Hashmi"
+  description={`Book bridal, engagement, party or Eid mehandi with Sana Hashmi. WhatsApp ${site.phoneDisplay}, email ${site.email} or send an enquiry. Based in Mira Road (East), available all over Mumbai.`}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <Breadcrumbs items={crumbs} />
+  <section class="section">
+    <div class="wrap grid">
+      <div class="side">
+        <span class="eyebrow">Bookings & enquiries</span>
+        <h1>How can I book <em>Sana?</em></h1>
+        <p class="lead">The fastest way is WhatsApp. Share your event date, event type, location in Mumbai and how many people need mehandi — or fill in the form and it will be sent to Sana as a WhatsApp message.</p>
+
+        <ul class="ways">
+          <li>
+            <a class="btn btn--solid" href={whatsappLink()} target="_blank" rel="noopener"><WhatsAppIcon /> WhatsApp {site.phoneDisplay}</a>
+          </li>
+          <li><span>Call</span><a href={`tel:${site.phoneE164}`}>{site.phoneDisplay}</a></li>
+          <li><span>Email</span><a href={`mailto:${site.email}`}>{site.email}</a></li>
+          <li><span>Instagram</span><a href={site.instagram} target="_blank" rel="noopener">{site.instagramHandle}</a> — “DM for booking 📥”</li>
+          <li><span>Based in</span>{site.locality}, {site.city} · available {site.serviceArea}</li>
+        </ul>
+      </div>
+
+      <form class="form" novalidate data-form>
+        <h2>Send an enquiry</h2>
+        <p class="hint">Fields marked * are required.</p>
+
+        <div class="row2">
+          <div class="field">
+            <label for="f-name">Name *</label>
+            <input id="f-name" name="name" autocomplete="name" required minlength="2" aria-describedby="e-name" />
+            <p class="err" id="e-name"></p>
+          </div>
+          <div class="field">
+            <label for="f-phone">Phone / WhatsApp *</label>
+            <input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required aria-describedby="e-phone" placeholder="+91" />
+            <p class="err" id="e-phone"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input id="f-email" name="email" type="email" autocomplete="email" aria-describedby="e-email" />
+          <p class="err" id="e-email"></p>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="f-type">Type of mehandi *</label>
+            <select id="f-type" name="type" required aria-describedby="e-type">
+              <option value="">Select…</option>
+              {eventTypes.map((t) => <option>{t}</option>)}
+            </select>
+            <p class="err" id="e-type"></p>
+          </div>
+          <div class="field">
+            <label for="f-date">Event date</label>
+            <input id="f-date" name="date" type="date" aria-describedby="e-date" />
+            <p class="err" id="e-date"></p>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="f-location">Location in Mumbai *</label>
+            <input id="f-location" name="location" required aria-describedby="e-location" placeholder="e.g. Mira Road, Andheri" />
+            <p class="err" id="e-location"></p>
+          </div>
+          <div class="field">
+            <label for="f-people">Number of people</label>
+            <input id="f-people" name="people" type="number" min="1" max="200" inputmode="numeric" aria-describedby="e-people" />
+            <p class="err" id="e-people"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-style">Preferred style</label>
+          <select id="f-style" name="style">
+            <option value="">Not sure yet</option>
+            {categories.map((c) => <option>{c.name}</option>)}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-msg">Message / design details</label>
+          <textarea id="f-msg" name="message" rows="4" maxlength="1500" placeholder="Paste a reel link, names or initials to include, timing…"></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn--solid" type="submit" data-via="whatsapp"><WhatsAppIcon /> Send via WhatsApp</button>
+          <button class="btn btn--ghost" type="submit" data-via="email">Send by email</button>
+        </div>
+        <div class="status" role="status" aria-live="polite" data-status hidden></div>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script define:vars={{ phone: site.phoneE164.replace('+', ''), email: site.email }}>
+  const form = document.querySelector('[data-form]');
+  const status = document.querySelector('[data-status]');
+  const date = form.elements.date;
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  date.min = today;
+
+  const rules = {
+    name: (v) => (v.trim().length >= 2 ? '' : 'Please enter your name.'),
+    phone: (v) => (v.replace(/\D/g, '').length >= 10 && /^[+\d\s()-]+$/.test(v.trim()) ? '' : 'Please enter a valid phone number (at least 10 digits).'),
+    email: (v) => (!v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? '' : 'Please enter a valid email address, or leave it empty.'),
+    type: (v) => (v ? '' : 'Please choose the type of mehandi.'),
+    date: (v) => (!v || v >= today ? '' : 'The event date can’t be in the past.'),
+    location: (v) => (v.trim().length >= 2 ? '' : 'Please tell us where in Mumbai.'),
+    people: (v) => (!v || (Number(v) >= 1 && Number(v) <= 200 && Number.isInteger(Number(v))) ? '' : 'Enter a whole number between 1 and 200.'),
+  };
+
+  function check(name) {
+    const el = form.elements[name];
+    const msg = rules[name](el.value);
+    el.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    document.getElementById('e-' + name).textContent = msg;
+    return !msg;
+  }
+  Object.keys(rules).forEach((n) => form.elements[n].addEventListener('blur', () => form.elements[n].value && check(n)));
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const via = e.submitter?.dataset.via ?? 'whatsapp';
+    const bad = Object.keys(rules).filter((n) => !check(n));
+    if (bad.length) {
+      status.hidden = false;
+      status.className = 'status is-error';
+      status.textContent = `Please fix ${bad.length === 1 ? 'the highlighted field' : `the ${bad.length} highlighted fields`} and try again.`;
+      form.elements[bad[0]].focus();
+      return;
+    }
+    const f = Object.fromEntries(new FormData(form));
+    const lines = [
+      'Hi Sana, I would like to enquire about a mehandi booking.',
+      `Name: ${f.name}`,
+      `Phone: ${f.phone}`,
+      f.email && `Email: ${f.email}`,
+      `Type: ${f.type}`,
+      f.date && `Event date: ${f.date}`,
+      `Location: ${f.location}`,
+      f.people && `Number of people: ${f.people}`,
+      f.style && `Preferred style: ${f.style}`,
+      f.message && `Details: ${f.message}`,
+    ].filter(Boolean).join('\n');
+
+    const url = via === 'email'
+      ? `mailto:${email}?subject=${encodeURIComponent(`Mehandi enquiry — ${f.type}${f.date ? ' on ' + f.date : ''}`)}&body=${encodeURIComponent(lines)}`
+      : `https://wa.me/${phone}?text=${encodeURIComponent(lines)}`;
+    let opened = true;
+    if (via === 'email') location.href = url;
+    else { const w = window.open(url, '_blank'); if (w) w.opener = null; opened = !!w; }
+
+    status.hidden = false;
+    status.className = 'status is-ok';
+    status.innerHTML = '';
+    const p = document.createElement('p');
+    p.textContent = via === 'email'
+      ? 'Your email app should now be open with the enquiry filled in — press Send there to deliver it.'
+      : 'WhatsApp is opening with your enquiry filled in — press Send in WhatsApp to deliver it to Sana.';
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = opened ? 'Didn’t open? Tap here.' : 'Your browser blocked the window — tap here to open it.';
+    status.append(p, a);
+  });
+</script>
+
+<style>
+  .grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(32px, 6vw, 88px); align-items: start; }
+  .side .lead { margin: 18px 0 28px; }
+  .ways { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .ways li { padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
+  .ways li:first-child { border-bottom: 0; padding-bottom: 20px; }
+  .ways span { display: inline-block; min-width: 96px; font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; color: var(--henna); }
+  .ways a:not(.btn) { color: var(--ink); text-underline-offset: 3px; }
+
+  .form { background: #fffdf9; border: 1px solid var(--line); border-radius: 20px; padding: clamp(24px, 4vw, 44px); }
+  .form h2 { font-size: 2rem; margin-bottom: 4px; }
+  .hint { font-size: .85rem; color: var(--muted); margin-bottom: 22px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  .field { display: grid; gap: 6px; margin-bottom: 6px; }
+  label { font-size: .85rem; font-weight: 500; }
+  input, select, textarea {
+    font: inherit; font-size: 1rem; color: var(--ink); width: 100%; min-height: 48px;
+    padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--ivory);
+    transition: border-color .2s, box-shadow .2s;
+  }
+  textarea { resize: vertical; min-height: 110px; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--henna); box-shadow: 0 0 0 3px rgb(110 42 31 / .12); }
+  [aria-invalid='true'] { border-color: #b3261e; }
+  .err { min-height: 1.2em; margin: 0; font-size: .8rem; color: #b3261e; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+  .status { margin-top: 20px; padding: 14px 16px; border-radius: 10px; font-size: .95rem; }
+  .status :global(p) { margin: 0 0 4px; }
+  .status.is-ok { background: #eef5ea; color: #24461b; }
+  .status.is-error { background: #fbeceb; color: #8c1d18; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } .actions .btn { width: 100%; } }
+</style>

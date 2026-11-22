@@ -1,0 +1,228 @@
+---
+import Base from '../layouts/Base.astro';
+import WorkImage from '../components/WorkImage.astro';
+import WorkCard from '../components/WorkCard.astro';
+import StatsStrip from '../components/StatsStrip.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import WhatsAppIcon from '../components/WhatsAppIcon.astro';
+import { categories, designsIn, formatCount, topPhotos, allDesigns } from '../data/designs';
+import { site, stats, whatsappLink } from '../data/site';
+import { homeFaqs } from '../data/faqs';
+
+const [heroMain, heroA, heroB] = [topPhotos[0], topPhotos[5], topPhotos[1]];
+const aboutImg = allDesigns.find((d) => d.code === 'Df761khjWbt')!;
+// each style gets a distinct cover; full-res photo posts beat small reel thumbnails
+const used = new Set<string>();
+const styleTiles = categories.map((c) => {
+  const items = designsIn(c.slug);
+  const free = items.filter((d) => d.image && !used.has(d.code));
+  const cover = free.find((d) => d.kind === 'photo') ?? free[0];
+  if (cover) used.add(cover.code);
+  return { ...c, count: items.length, cover };
+});
+
+const schema = [
+  {
+    '@type': 'Service',
+    name: 'Mehandi (henna) application',
+    serviceType: 'Bridal, engagement and festive mehandi',
+    provider: { '@id': new URL('/#sana-hashmi', Astro.site).href },
+    areaServed: { '@type': 'City', name: 'Mumbai' },
+  },
+  {
+    '@type': 'FAQPage',
+    mainEntity: homeFaqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+<Base
+  title={`${site.name} — Bridal Mehandi Artist in Mira Road, Mumbai | Sana Hashmi`}
+  description={`Bridal, engagement, floral, Gulf and Kashmiri mehandi by Sana Hashmi, a self-taught artist in Mira Road (East) available all over Mumbai. ${stats.totalReelViews} Instagram reel views. Book on WhatsApp.`}
+  schema={schema}
+>
+  <!-- A. Hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Mehandi artist · {site.locality}, {site.city}</span>
+        <h1>Bridal mehandi that brides <em>save</em> for their big day</h1>
+        <p class="lead">
+          {site.name} is the mehandi studio of {site.artist} — a self-taught artist with {site.experience} of experience,
+          creating bridal, engagement and festive designs for clients all over Mumbai. Her reels have passed {stats.totalReelViews} views on Instagram.
+        </p>
+        <div class="btn-row">
+          <a class="btn btn--solid" href={whatsappLink()} target="_blank" rel="noopener"><WhatsAppIcon /> Book on WhatsApp</a>
+          <a class="btn btn--ghost" href="/gallery">View designs</a>
+        </div>
+        <ul class="facts" aria-label="At a glance">
+          <li><strong>{stats.totalReelViews}</strong> views</li>
+          <li><strong>{site.experience}</strong></li>
+          <li><strong>Self-taught</strong></li>
+          <li><strong>Mira Road</strong>, Mumbai</li>
+        </ul>
+      </div>
+      <div class="hero-art">
+        <figure class="ha ha-main">
+          <WorkImage design={heroMain} widths={[480, 720, 960, 1200]} sizes="(max-width: 900px) 70vw, 34vw" eager />
+          <figcaption><span>{formatCount(heroMain.views!)} views</span> {heroMain.label.split(' — ')[0]}</figcaption>
+        </figure>
+        <figure class="ha ha-a">
+          <WorkImage design={heroA} widths={[320, 480, 640]} sizes="(max-width: 900px) 40vw, 17vw" eager />
+        </figure>
+        <figure class="ha ha-b">
+          <WorkImage design={heroB} widths={[320, 480, 640]} sizes="(max-width: 900px) 40vw, 15vw" />
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <StatsStrip />
+
+  <!-- D. Featured photo work -->
+  <section class="section section--sand" aria-labelledby="photos-h">
+    <div class="wrap">
+      <div class="section-head split">
+        <div>
+          <span class="eyebrow">Most-viewed photo posts</span>
+          <h2 id="photos-h">Designs people <em>save</em></h2>
+        </div>
+        <p class="lead">Her floral photo post reached 366K views and was saved 8,000 times — the clearest sign of what brides want for themselves.</p>
+      </div>
+      <div class="photo-grid">
+        {topPhotos.slice(0, 9).map((d, i) => (
+          <div class={`pg pg-${i + 1} reveal`}>
+            <WorkCard design={d} rank={i + 1} sizes={i === 0 ? '(max-width: 760px) 92vw, 50vw' : '(max-width: 760px) 46vw, 25vw'} />
+          </div>
+        ))}
+      </div>
+      <p class="more"><a class="link-arrow" href="/gallery">See the full gallery</a></p>
+    </div>
+  </section>
+
+  <!-- C. Styles -->
+  <section class="section" aria-labelledby="styles-h">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">Explore by style</span>
+        <h2 id="styles-h">Find your <em>style</em></h2>
+        <p class="lead">From full bridal sets to a quick minimal palm — each style has its own page with real work from Sana’s Instagram.</p>
+      </div>
+      <ul class="styles">
+        {styleTiles.map((c) => (
+          <li class="reveal">
+            <a href={`/designs/${c.slug}`} class:list={['tile', { 'tile--text': !c.cover }]}>
+              {c.cover && <WorkImage design={c.cover} widths={[320, 480, 640]} sizes="(max-width: 640px) 46vw, 20vw" />}
+              <span class="tile-cap">
+                <span class="tile-name">{c.short}</span>
+                <span class="tile-count">{c.count} {c.count === 1 ? 'design' : 'designs'}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- E. About -->
+  <section class="section section--sand" aria-labelledby="about-h">
+    <div class="wrap about">
+      <figure class="about-img reveal">
+        <WorkImage design={aboutImg} widths={[480, 720, 960]} sizes="(max-width: 860px) 92vw, 40vw" />
+      </figure>
+      <div class="about-copy reveal">
+        <span class="eyebrow">About the artist</span>
+        <h2 id="about-h">Self-taught, <em>detail-obsessed</em></h2>
+        <p>Sana Hashmi taught herself mehandi and has been creating designs for {site.experience}. Working from Mira Road (East), she now takes bookings across Mumbai — bridal sets, engagement and nikah mehandi, Eid specials and everyday party designs.</p>
+        <p>Most people find her through Instagram: on her <a href="/viral-designs">viral reels</a>, 95–99.9% of viewers were not yet following the page. This site brings that work together in one place, so you can pick a style and book.</p>
+        <a class="link-arrow" href="/about">Read Sana’s story</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How booking works -->
+  <section class="section" aria-labelledby="steps-h">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">Booking</span>
+        <h2 id="steps-h">How do I book Sana for my event?</h2>
+      </div>
+      <ol class="steps">
+        <li class="reveal"><span class="sn">01</span><h3>Send your details</h3><p>WhatsApp {site.phoneDisplay} or use the enquiry form: event date, event type, location in Mumbai and number of people.</p></li>
+        <li class="reveal"><span class="sn">02</span><h3>Choose your design</h3><p>Pick a style from this site or share any of Sana’s reels and posts, plus names or initials you’d like included.</p></li>
+        <li class="reveal"><span class="sn">03</span><h3>Confirm on WhatsApp</h3><p>Sana confirms availability and the appointment details with you directly on WhatsApp.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <Faq items={homeFaqs} heading="Questions brides ask before booking" />
+
+  <CtaBand heading="Ready to book your mehandi?" />
+</Base>
+
+<style>
+  .hero { padding: clamp(32px, 6vw, 72px) 0 clamp(56px, 8vw, 96px); }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
+  .hero-copy .lead { margin: 22px 0 30px; }
+  .facts { list-style: none; display: flex; flex-wrap: wrap; gap: 10px 26px; padding: 26px 0 0; margin: 34px 0 0; border-top: 1px solid var(--line); font-size: .9rem; color: var(--muted); }
+  .facts strong { color: var(--henna); font-weight: 500; }
+
+  .hero-art { position: relative; aspect-ratio: 1 / 1.05; }
+  .ha { margin: 0; position: absolute; overflow: hidden; border-radius: var(--radius); background: var(--sand); box-shadow: 0 30px 60px -30px rgb(43 33 28 / .35); }
+  .ha :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .ha-main { left: 14%; top: 0; width: 64%; height: 86%; border-radius: 200px 200px var(--radius) var(--radius); animation: rise 1.2s var(--ease) both; }
+  .ha-a { left: 0; bottom: 0; width: 34%; height: 40%; animation: rise 1.2s .15s var(--ease) both; border: 6px solid var(--ivory); }
+  .ha-b { right: 0; top: 30%; width: 30%; height: 38%; animation: rise 1.2s .3s var(--ease) both; border: 6px solid var(--ivory); }
+  .ha-main figcaption {
+    position: absolute; right: 16px; bottom: 16px; max-width: calc(100% - 32px); padding: 10px 14px; border-radius: 10px;
+    background: rgb(250 246 240 / .92); font-size: .85rem; color: var(--muted); backdrop-filter: blur(6px);
+  }
+  .ha-main figcaption span { color: var(--henna); font-family: var(--font-serif); font-size: 1.2rem; margin-right: 6px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: none; align-items: end; }
+  .split .lead { margin: 0; }
+
+  .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px 24px; align-items: start; }
+  .pg-1 { grid-column: span 2; grid-row: span 2; }
+  .pg-1 :global(.media) { aspect-ratio: 4 / 4.6; }
+  .pg-4 { margin-top: 0; }
+  .more { margin: 40px 0 0; text-align: center; }
+
+  .styles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .tile { position: relative; display: block; aspect-ratio: 3 / 4; border-radius: var(--radius); overflow: hidden; background: var(--sand); text-decoration: none; color: inherit; }
+  .tile :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+  .tile:hover :global(img) { transform: scale(1.05); }
+  .tile-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 16px 16px; display: grid; background: linear-gradient(to top, rgb(43 33 28 / .72), transparent); color: #fff; }
+  .tile-name { font-family: var(--font-serif); font-size: 1.45rem; line-height: 1.1; }
+  .tile-count { font-size: .78rem; opacity: .85; letter-spacing: .04em; }
+  .tile--text { display: grid; place-items: end start; border: 1px solid var(--line); }
+  .tile--text .tile-cap { background: none; color: var(--ink); }
+  .tile--text:hover { background: var(--sand-deep); }
+
+  .about { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(32px, 6vw, 88px); align-items: center; }
+  .about-img { margin: 0; border-radius: 240px 240px var(--radius) var(--radius); overflow: hidden; aspect-ratio: 4 / 5; }
+  .about-img :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .about-copy p { color: var(--muted); }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; counter-reset: s; }
+  .steps li { padding: 32px 28px; border: 1px solid var(--line); border-radius: var(--radius); background: #fffdf9; }
+  .sn { font-family: var(--font-serif); font-style: italic; color: var(--gold); font-size: 1.6rem; display: block; margin-bottom: 14px; }
+  .steps p { color: var(--muted); margin: 0; }
+
+  @media (max-width: 1020px) {
+    .styles { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-art { max-width: 520px; width: 100%; margin-inline: auto; }
+    .split { grid-template-columns: 1fr; gap: 12px; }
+    .about { grid-template-columns: 1fr; }
+    .about-img { max-width: 460px; }
+    .steps { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .photo-grid { grid-template-columns: 1fr 1fr; gap: 24px 14px; }
+    .styles { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  }
+</style>

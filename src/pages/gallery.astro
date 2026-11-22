@@ -1,0 +1,105 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import WorkCard from '../components/WorkCard.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { allDesigns, byPopularity, categories, postUrl } from '../data/designs';
+import { site } from '../data/site';
+
+const items = [...allDesigns].sort(byPopularity);
+const crumbs = [{ name: 'Gallery', path: '/gallery' }];
+const schema = [{
+  '@type': 'CollectionPage',
+  name: `Mehandi portfolio — ${site.artist}`,
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: items.length,
+    itemListElement: items.map((d, i) => ({ '@type': 'ListItem', position: i + 1, url: postUrl(d), name: d.label })),
+  },
+}];
+---
+<Base
+  title="Mehandi Gallery — Bridal & Signature Work by Sana Hashmi"
+  description={`${items.length} mehandi designs by Sana Hashmi, ordered by Instagram popularity. Filter by bridal, engagement, Gulf, Kashmiri, floral, patchwork, minimal, Eid and stain results.`}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <Breadcrumbs items={crumbs} />
+  <section class="section head">
+    <div class="wrap section-head">
+      <span class="eyebrow">Gallery</span>
+      <h1>Sana’s work, <em>most popular first</em></h1>
+      <p class="lead">Every design here links to its original Instagram post. Photo posts and the newest work lead; reels without a cover image open straight on Instagram.</p>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="filters" role="group" aria-label="Filter by style" data-filters>
+      <button type="button" aria-pressed="true" data-filter="all">All <span>{items.length}</span></button>
+      {categories.map((c) => {
+        const n = items.filter((d) => d.categories.includes(c.slug)).length;
+        return <button type="button" aria-pressed="false" data-filter={c.slug}>{c.short} <span>{n}</span></button>;
+      })}
+    </div>
+    <p class="status" aria-live="polite" data-status></p>
+
+    <div class="grid" data-grid>
+      {items.map((d, i) => (
+        <div class="cell" data-cats={d.categories.join(' ')}>
+          <WorkCard design={d} eager={i < 3} sizes="(max-width: 640px) 46vw, (max-width: 1000px) 31vw, 24vw" />
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <CtaBand heading="Seen a design you love?" text="Send the link on WhatsApp with your event date and location — Sana will take it from there." />
+</Base>
+
+<script>
+  const wrap = document.querySelector<HTMLElement>('[data-filters]');
+  const cells = [...document.querySelectorAll<HTMLElement>('[data-grid] .cell')];
+  const status = document.querySelector<HTMLElement>('[data-status]');
+  const buttons = [...(wrap?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
+
+  function apply(filter: string, push = true) {
+    if (!buttons.some((b) => b.dataset.filter === filter)) filter = 'all';
+    let shown = 0;
+    for (const c of cells) {
+      const on = filter === 'all' || (c.dataset.cats ?? '').split(' ').includes(filter);
+      c.hidden = !on;
+      if (on) shown++;
+    }
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
+    if (status) status.textContent = `${shown} ${shown === 1 ? 'design' : 'designs'} shown`;
+    if (push) history.replaceState(null, '', filter === 'all' ? location.pathname : `?style=${filter}`);
+  }
+  wrap?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest('button');
+    if (b?.dataset.filter) apply(b.dataset.filter);
+  });
+  apply(new URLSearchParams(location.search).get('style') ?? 'all', false);
+</script>
+
+<style>
+  .head { padding-bottom: 24px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .filters button {
+    font: 500 .88rem/1 var(--font-sans); padding: 11px 16px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: transparent; color: var(--ink); transition: all .25s var(--ease);
+  }
+  .filters button span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+  .filters button:hover { border-color: var(--henna); }
+  .filters button[aria-pressed='true'] { background: var(--henna); border-color: var(--henna); color: var(--ivory); }
+  .filters button[aria-pressed='true'] span { color: rgb(250 246 240 / .75); }
+  .status { font-size: .82rem; color: var(--muted); margin: 6px 0 28px; min-height: 1.3em; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px 22px; padding-bottom: clamp(64px, 9vw, 120px); }
+  .cell[hidden] { display: none; }
+  .cell { animation: fade .5s var(--ease); }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr 1fr; gap: 28px 12px; }
+    .filters { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding: 0 16px 6px; scrollbar-width: none; }
+    .filters button { flex: none; }
+  }
+</style>

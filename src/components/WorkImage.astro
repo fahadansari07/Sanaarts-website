@@ -1,0 +1,25 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { Design } from '../data/designs';
+
+interface Props { design: Design; widths?: number[]; sizes?: string; eager?: boolean; class?: string }
+const { design, widths = [360, 540, 720, 960], sizes = '(max-width: 640px) 92vw, 33vw', eager = false, class: cls } = Astro.props;
+
+const files = import.meta.glob<ImageMetadata>('../assets/work/*', { eager: true, import: 'default' });
+const src = design.image ? files[`../assets/work/${design.image}`] : undefined;
+if (design.image && !src) throw new Error(`Missing image file src/assets/work/${design.image} for ${design.code}`);
+// never upscale small (grid-thumbnail) sources
+const usable = src ? widths.filter((w) => w <= src.width) : [];
+---
+{src && (
+  <Image
+    src={src}
+    alt={design.alt ?? design.label}
+    widths={usable.length ? usable : [src.width]}
+    sizes={sizes}
+    loading={eager ? 'eager' : 'lazy'}
+    fetchpriority={eager ? 'high' : 'auto'}
+    class={cls}
+  />
+)}

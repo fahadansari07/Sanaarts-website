@@ -1,0 +1,32 @@
+---
+import { site, whatsappLink } from '../data/site';
+import WhatsAppIcon from './WhatsAppIcon.astro';
+interface Props { heading?: string; text?: string; message?: string }
+const {
+  heading = 'Planning your mehandi?',
+  text = `Share your date, location and a design you love — Sana replies on WhatsApp. Available ${site.serviceArea}.`,
+  message,
+} = Astro.props;
+---
+<section class="cta">
+  <div class="wrap inner reveal">
+    <h2>{heading}</h2>
+    <p>{text}</p>
+    <div class="btn-row">
+      <a class="btn btn--solid" href={whatsappLink(message)} target="_blank" rel="noopener"><WhatsAppIcon /> Book on WhatsApp</a>
+      <a class="btn btn--ghost" href="/contact">Send an enquiry</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Dark band: re-map tokens so headings, text and buttons invert without new rules */
+  .cta {
+    padding: clamp(64px, 9vw, 112px) 0; background: var(--night); color: var(--sand); text-align: center;
+    --henna: var(--gold-light); --henna-dark: #f6ead0; --ivory: var(--night); --muted: #cfc8b6;
+  }
+  .inner { max-width: 720px; }
+  h2 em { color: var(--henna); }
+  p { color: var(--muted); font-size: 1.1rem; margin-inline: auto; max-width: 52ch; }
+  .btn-row { justify-content: center; margin-top: 28px; }
+</style>

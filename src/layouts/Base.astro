@@ -1,0 +1,105 @@
+---
+import { Font, getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+import { categories } from '../data/designs';
+import defaultOg from '../assets/work/DdoXTPqD8Pp.jpg';
+import '../styles/global.css';
+
+interface Crumb { name: string; path: string }
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: ImageMetadata;
+  ogImageAlt?: string;
+  breadcrumbs?: Crumb[];
+  schema?: Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const { title, description, ogImage = defaultOg, ogImageAlt = 'Floral mehandi by Sana Hashmi', breadcrumbs, schema = [], noindex = false } = Astro.props;
+const siteUrl = Astro.site!;
+const canonical = new URL(Astro.url.pathname.replace(/\.html$/, '').replace(/(^|\/)index$/, '$1').replace(/(.)\/$/, '$1'), siteUrl).href;
+const og = await getImage({ src: ogImage, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+const ogUrl = new URL(og.src, siteUrl).href;
+const fullTitle = title.includes(site.name) ? title : `${title} | ${site.name}`;
+
+const personId = new URL('/#sana-hashmi', siteUrl).href;
+const websiteId = new URL('/#website', siteUrl).href;
+
+const graph: Record<string, unknown>[] = [
+  {
+    '@type': 'WebSite', '@id': websiteId, url: siteUrl.href, name: site.name,
+    alternateName: site.alternateNames, inLanguage: 'en-IN', publisher: { '@id': personId },
+  },
+  {
+    '@type': 'Person', '@id': personId, name: site.artist, url: siteUrl.href,
+    jobTitle: 'Mehandi (henna) artist', description: site.description,
+    image: ogUrl, email: `mailto:${site.email}`, telephone: site.phoneE164,
+    address: { '@type': 'PostalAddress', addressLocality: `${site.locality}, ${site.city}`, addressRegion: site.region, addressCountry: site.country },
+    knowsAbout: categories.map((c) => c.name),
+    sameAs: [site.instagram, site.youtube],
+  },
+  {
+    '@type': 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: fullTitle, description,
+    isPartOf: { '@id': websiteId }, about: { '@id': personId }, inLanguage: 'en-IN',
+    primaryImageOfPage: { '@type': 'ImageObject', url: ogUrl },
+  },
+  ...(breadcrumbs ? [{
+    '@type': 'BreadcrumbList',
+    itemListElement: [{ name: 'Home', path: '/' }, ...breadcrumbs].map((b, i) => ({
+      '@type': 'ListItem', position: i + 1, name: b.name, item: new URL(b.path, siteUrl).href,
+    })),
+  }] : []),
+  ...schema,
+];
+const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
+---
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {!noindex && <link rel="canonical" href={canonical} />}
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#2a2917" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <Font cssVariable="--font-serif" preload={[{ weight: 500, style: 'normal' }]} />
+    <Font cssVariable="--font-sans" preload={[{ weight: 400, style: 'normal' }]} />
+
+    <script is:inline set:html={"document.documentElement.classList.add('js')"} />
+    <script type="application/ld+json" set:html={jsonLd} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+      }, { rootMargin: '0px 0px -8% 0px' });
+      document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

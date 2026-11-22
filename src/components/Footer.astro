@@ -1,0 +1,62 @@
+---
+import { categories } from '../data/designs';
+import { site, whatsappLink } from '../data/site';
+const year = new Date().getFullYear();
+---
+<footer class="footer">
+  <div class="wrap grid">
+    <div class="about">
+      <p class="name">{site.name}</p>
+      <p>Mehandi by {site.artist} — self-taught, {site.experience} of experience. Based in {site.locality}, available {site.serviceArea}.</p>
+      <p class="collab">Open for collab and PR.</p>
+    </div>
+    <nav aria-label="Design styles">
+      <p class="h">Designs</p>
+      <ul>{categories.map((c) => <li><a href={`/designs/${c.slug}`}>{c.name}</a></li>)}</ul>
+    </nav>
+    <nav aria-label="Site">
+      <p class="h">Explore</p>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About Sana</a></li>
+        <li><a href="/gallery">Gallery</a></li>
+        <li><a href="/contact">Book &amp; contact</a></li>
+      </ul>
+    </nav>
+    <div>
+      <p class="h">Contact</p>
+      <ul>
+        <li><a href={whatsappLink()} target="_blank" rel="noopener">WhatsApp {site.phoneDisplay}</a></li>
+        <li><a href={`tel:${site.phoneE164}`}>Call {site.phoneDisplay}</a></li>
+        <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+        <li><a href={site.instagram} target="_blank" rel="noopener">Instagram {site.instagramHandle}</a></li>
+        <li><a href={site.youtube} target="_blank" rel="noopener">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap base">
+    <p>© {year} {site.name} · {site.artist}</p>
+    <p class="dua" lang="ar-Latn">{site.dua} 🤍</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: color-mix(in srgb, var(--night) 82%, #000); color: var(--ink); padding: 72px 0 28px; font-size: .95rem;
+    border-top: 1px solid rgb(228 210 160 / .18);
+    --ink: var(--sand); --muted: #c4bdab; --henna: var(--gold-light); --sand-deep: rgb(228 210 160 / .18);
+  }
+  .grid { display: grid; grid-template-columns: 1.4fr 1fr .8fr 1.1fr; gap: 40px; }
+  .name { font-family: var(--font-serif); font-size: 2rem; color: var(--henna); font-weight: 600; margin-bottom: .4em; }
+  .about p { color: var(--muted); max-width: 34ch; }
+  .collab { font-style: italic; font-family: var(--font-serif); font-size: 1.15rem; color: var(--henna) !important; }
+  .h { font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; color: var(--henna); margin-bottom: 14px; font-weight: 500; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  a { color: var(--ink); text-decoration: none; }
+  a:hover { color: var(--henna); text-decoration: underline; text-underline-offset: 3px; }
+  .base { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--sand-deep); margin-top: 56px; padding-top: 22px; color: var(--muted); font-size: .85rem; }
+  .base p { margin: 0; }
+  .dua { font-family: var(--font-serif); font-style: italic; font-size: 1rem; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; gap: 32px; } }
+</style>

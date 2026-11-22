@@ -1,0 +1,69 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import WorkImage from '../components/WorkImage.astro';
+import CtaBand from '../components/CtaBand.astro';
+import StatsStrip from '../components/StatsStrip.astro';
+import { allDesigns, categories } from '../data/designs';
+import { site, stats } from '../data/site';
+import aboutOg from '../assets/work/DfjTG-3j9aL.jpg';
+
+const pick = (code: string) => allDesigns.find((d) => d.code === code)!;
+const [imgA, imgB] = [pick('DfjTG-3j9aL'), pick('Df_251ljTaI')];
+const crumbs = [{ name: 'About', path: '/about' }];
+const schema = [{ '@type': 'AboutPage', name: `About ${site.artist}`, mainEntity: { '@id': new URL('/#sana-hashmi', Astro.site).href } }];
+---
+<Base
+  title={`About Sana Hashmi — Self-Taught Mehandi Artist, Mira Road`}
+  description={`Sana Hashmi is a self-taught mehandi artist from Mira Road (East), Mumbai, with ${site.experience} of experience and ${stats.totalReelViews} Instagram reel views. Bridal, engagement and festive mehandi across Mumbai.`}
+  ogImage={aboutOg}
+  ogImageAlt={imgA.alt}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <Breadcrumbs items={crumbs} />
+  <section class="section">
+    <div class="wrap intro">
+      <div class="copy">
+        <span class="eyebrow">About the artist</span>
+        <h1>Who is <em>Sana Hashmi?</em></h1>
+        <p class="lead">Sana Hashmi is a professional mehandi (henna) artist based in {site.locality}, {site.city}. She is self-taught, has {site.experience} of experience, and runs {site.name} — known on Instagram as {site.instagramHandle}.</p>
+        <p>She creates bridal sets, engagement and nikah mehandi, Eid and Teej specials, and lighter party designs, and takes bookings all over Mumbai. Her work ranges across {categories.map((c) => c.short).join(', ')} styles — often on client demand, with names, rings or initials worked into the design.</p>
+      </div>
+      <figure class="img-a reveal"><WorkImage design={imgA} widths={[480, 720, 960]} sizes="(max-width: 860px) 92vw, 38vw" eager /></figure>
+    </div>
+  </section>
+
+  <StatsStrip />
+
+  <section class="section">
+    <div class="wrap story">
+      <figure class="img-b reveal"><WorkImage design={imgB} widths={[480, 720, 960]} sizes="(max-width: 860px) 92vw, 34vw" /></figure>
+      <div class="copy reveal">
+        <h2>How did Sana’s mehandi reach millions?</h2>
+        <p>Through Instagram reels. Her most-viewed reel, a bridal design set to “Piya Ghar Aaya”, has {`2.43 million`} views; a dark stain-reveal reel followed with 1.8 million. Ten of her reels have passed 100,000 views, and on the viral ones 95–99.9% of viewers were not yet following her.</p>
+        <p>Brides save what they want to recreate: one reel was saved over 16,000 times, and her best floral photo post was saved 8,000 times.</p>
+        <h2>Who does she work with?</h2>
+        <p>Sana regularly collaborates with fellow artist <a href={site.collaborator.url} target="_blank" rel="noopener">{site.collaborator.handle}</a>, and is open to collaborations and PR.</p>
+        <p class="dua"><span lang="ar-Latn">“{site.dua}”</span> — the line on her Instagram profile, a dua meaning “O Allah, make us among the successful.”</p>
+        <a class="link-arrow" href="/gallery">See her work</a>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>
+
+<style>
+  .intro, .story { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(32px, 6vw, 88px); align-items: center; }
+  .story { grid-template-columns: .85fr 1.15fr; }
+  .copy p { color: var(--muted); }
+  .copy .lead { color: var(--ink); margin-bottom: 1.1em; }
+  .copy h2 { font-size: clamp(1.6rem, 2.8vw, 2.2rem); margin-top: 1.2em; }
+  .copy h2:first-child { margin-top: 0; }
+  figure { margin: 0; overflow: hidden; aspect-ratio: 4 / 5; border-radius: var(--radius); }
+  .img-a { border-radius: 240px 240px var(--radius) var(--radius); }
+  figure :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .dua { font-family: var(--font-serif); font-style: italic; font-size: 1.2rem; color: var(--henna) !important; border-left: 2px solid var(--gold); padding-left: 18px; }
+  @media (max-width: 860px) { .intro, .story { grid-template-columns: 1fr; } .story figure { order: 2; } }
+</style>

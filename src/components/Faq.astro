@@ -1,0 +1,37 @@
+---
+import type { FaqItem } from '../data/faqs';
+interface Props { items: FaqItem[]; heading?: string }
+const { items, heading = 'Frequently asked questions' } = Astro.props;
+---
+<section class="section faq" aria-labelledby="faq-h">
+  <div class="wrap grid">
+    <div class="section-head">
+      <span class="eyebrow">FAQ</span>
+      <h2 id="faq-h">{heading}</h2>
+    </div>
+    <div class="list">
+      {items.map((f) => (
+        <details class="reveal">
+          <summary><h3>{f.q}</h3><span class="plus" aria-hidden="true"></span></summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 48px; align-items: start; }
+  details { border-top: 1px solid var(--line); }
+  details:last-child { border-bottom: 1px solid var(--line); }
+  summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 0; cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
+  h3 { margin: 0; font-size: 1.35rem; }
+  summary:hover h3 { color: var(--henna); }
+  .plus { position: relative; width: 14px; height: 14px; flex: none; }
+  .plus::before, .plus::after { content: ''; position: absolute; inset: 6px 0 auto; height: 1.5px; background: var(--henna); transition: transform .3s var(--ease); }
+  .plus::after { transform: rotate(90deg); }
+  details[open] .plus::after { transform: rotate(0); }
+  details p { color: var(--muted); padding: 0 40px 22px 0; margin: 0; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; gap: 8px; } }
+</style>

@@ -1,0 +1,94 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { categories, designsIn, postUrl, type Category } from '../../data/designs';
+import { site } from '../../data/site';
+import type { ImageMetadata } from 'astro';
+
+export function getStaticPaths() {
+  return categories.map((c) => ({ params: { slug: c.slug }, props: { category: c } }));
+}
+
+const { category } = Astro.props as { category: Category };
+const items = designsIn(category.slug);
+const ogItem = items.find((d) => d.image);
+const files = import.meta.glob<ImageMetadata>('../../assets/work/*', { eager: true, import: 'default' });
+const ogImage = ogItem ? files[`../../assets/work/${ogItem.image}`] : undefined;
+const related = categories.filter((c) => c.slug !== category.slug && designsIn(c.slug).some((d) => d.categories.includes(category.slug)));
+const others = (related.length ? related : categories.filter((c) => c.slug !== category.slug)).slice(0, 4);
+// "Yes." openers read badly out of context; clamp to ~160 chars on a word boundary
+const firstSentence = category.intro.replace(/^Yes\.\s*/, '').split(/(?<=\.)\s/)[0];
+const rawMeta = `${items.length} real ${category.name} designs by ${site.artist}, Mira Road (East), Mumbai. ${firstSentence}`;
+const metaDescription = rawMeta.length <= 160 ? rawMeta : rawMeta.slice(0, rawMeta.lastIndexOf(' ', 157)) + '…';
+const crumbs = [{ name: 'Designs', path: '/designs' }, { name: category.name, path: `/designs/${category.slug}` }];
+const schema = [{
+  '@type': 'CollectionPage',
+  name: `${category.name} by ${site.artist}`,
+  about: category.name,
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: items.length,
+    itemListElement: items.map((d, i) => ({ '@type': 'ListItem', position: i + 1, url: postUrl(d), name: d.label })),
+  },
+}];
+---
+<Base
+  title={`${category.name} in Mumbai | ${site.artist}`}
+  description={metaDescription}
+  ogImage={ogImage}
+  ogImageAlt={ogItem?.alt}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <Breadcrumbs items={crumbs} />
+  <section class="section head">
+    <div class="wrap head-grid">
+      <div>
+        <span class="eyebrow">Design style</span>
+        <h1>{category.name}</h1>
+      </div>
+      <div>
+        <h2 class="q">{category.question}</h2>
+        <p class="lead">{category.intro}</p>
+        <p class="count">{items.length} {items.length === 1 ? 'design' : 'designs'} · ordered by Instagram popularity · tap to open the original post</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap gallery" aria-label={`${category.name} designs`}>
+    {items.map((d, i) => (
+      <div class="reveal"><WorkCard design={d} eager={i < 2} /></div>
+    ))}
+  </section>
+
+  <section class="wrap more">
+    <h2>Explore related styles</h2>
+    <ul>
+      {others.map((c) => <li><a href={`/designs/${c.slug}`}>{c.name}</a></li>)}
+      <li><a href="/gallery">Full gallery</a></li>
+    </ul>
+  </section>
+
+  <CtaBand
+    heading={`Book ${category.name}`}
+    message={`Hi Sana, I'm interested in ${category.name}. My event date is: `}
+  />
+</Base>
+
+<style>
+  .head { padding-bottom: 40px; }
+  .head-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; align-items: end; }
+  h1 { margin: 0; }
+  .q { font-size: 1.4rem; font-style: italic; color: var(--henna); margin-bottom: 10px; }
+  .lead { margin: 0 0 16px; }
+  .count { font-size: .85rem; color: var(--muted); margin: 0; letter-spacing: .02em; }
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px 24px; padding-bottom: 72px; }
+  .more { padding: 40px 0 80px; border-top: 1px solid var(--line); }
+  .more h2 { font-size: 1.6rem; }
+  .more ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+  .more a { display: inline-block; padding: 10px 18px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-size: .92rem; transition: all .25s; }
+  .more a:hover { border-color: var(--henna); color: var(--henna); }
+  @media (max-width: 900px) { .head-grid { grid-template-columns: 1fr; gap: 16px; } .gallery { grid-template-columns: 1fr 1fr; gap: 28px 14px; } }
+</style>
